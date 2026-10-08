@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>实验一：文本分类实验报告</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 12mm 14mm; }
+  body { font-family: "Microsoft YaHei", "SimSun", sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; margin: 0; }
+  h1 { font-size: 16pt; text-align: center; margin: 0 0 4px 0; }
+  .meta { text-align: center; font-size: 10pt; color: #333; margin-bottom: 2px; }
+  .gh { text-align: center; font-size: 9.5pt; margin-bottom: 8px; }
+  .gh a { color: #0645ad; word-break: break-all; }
+  h2 { font-size: 11.5pt; margin: 10px 0 4px 0; border-left: 4px solid #333; padding-left: 6px; }
+  p { margin: 3px 0; text-align: justify; }
+  table { border-collapse: collapse; width: 100%; font-size: 9pt; margin: 4px 0; }
+  th, td { border: 1px solid #555; padding: 2.5px 5px; text-align: center; }
+  th { background: #eee; }
+  .best { background: #d6f5d6; font-weight: bold; }
+  .fig { text-align: center; margin: 4px 0; }
+  .fig img { width: 78%; }
+  .figcap { font-size: 8.5pt; color: #555; }
+  ul { margin: 3px 0 3px 0; padding-left: 20px; }
+  li { margin: 1.5px 0; }
+  .small { font-size: 9pt; color: #444; }
+</style>
+</head>
+<body>
+
+<h1>实验一：文本分类实验报告</h1>
+<div class="meta">姓名：温正康　　学号：10245501411</div>
+<div class="gh">GitHub 仓库：<a href="__GITHUB_URL__">__GITHUB_URL__</a></div>
+
+<h2>一、实验任务与方法</h2>
+<p>本实验对新闻组英文文本做 10 分类（训练集 7368 条，测试集 2457 条）。完整流程：<b>数据清洗 → 8:2 分层划分验证集 → TF-IDF 特征化 → 多模型训练与调参对比 → 用最优模型预测封存测试集</b>。全程固定 <code>random_state=42</code> 以保证可复现；测试集只在最后预测一次。</p>
+
+<h2>二、数据与预处理</h2>
+<ul>
+<li><b>清洗</b>：裁掉邮件头部（第一个空行之前的 From/Subject/Organization 等），去除 URL、邮箱地址、标点与数字，统一转小写；英文停用词由 <code>TfidfVectorizer(stop_words="english")</code> 过滤。</li>
+<li><b>划分</b>：从 7368 条训练数据中按标签分层切出 20%（1474 条）作验证集，其余 5894 条用于训练；测试集（2457 条）全程封存。</li>
+<li><b>特征</b>：TF-IDF，<code>max_features=5000</code>，<code>sublinear_tf=True</code>。词表与 IDF 权重<b>只在训练集上拟合</b>，同一规则套用到验证集与测试集，避免数据泄露。</li>
+</ul>
+
+<h2>三、模型与调参结果</h2>
+<p>对朴素贝叶斯（NB）、线性 SVM、逻辑回归（LR）、多层感知机（MLP）共 9 组参数在同一验证集上比较：</p>
+<table>
+<tr><th>模型</th><th>参数</th><th>验证集准确率</th><th>训练耗时</th></tr>
+<tr class="best"><td>MLP</td><td>hidden=(100,), alpha=1e-3</td><td>0.8921</td><td>111 s</td></tr>
+<tr><td>MLP</td><td>hidden=(50,)</td><td>0.8901</td><td>64 s</td></tr>
+<tr><td>SVM</td><td>linear, C=1.0</td><td>0.8867</td><td>11 s</td></tr>
+<tr><td>SVM</td><td>linear, C=10</td><td>0.8806</td><td>12 s</td></tr>
+<tr><td>LR</td><td>C=1.0</td><td>0.8786</td><td>0.5 s</td></tr>
+<tr><td>NB</td><td>alpha=0.1</td><td>0.8772</td><td>&lt;0.1 s</td></tr>
+<tr><td>NB</td><td>alpha=1.0</td><td>0.8738</td><td>&lt;0.1 s</td></tr>
+<tr><td>LR</td><td>C=0.1</td><td>0.8548</td><td>0.2 s</td></tr>
+<tr><td>SVM</td><td>linear, C=0.1</td><td>0.8148</td><td>17 s</td></tr>
+</table>
+
+<div class="fig">
+  <img src="validation_comparison.png" alt="模型对比">
+  <div class="figcap">图 1　各模型在验证集上的最佳准确率对比</div>
+</div>
+
+<h2>四、结果分析</h2>
+<ul>
+<li>最优方案为 <b>MLP hidden=(100,)</b>，验证集准确率 <b>89.21%</b>；SVM(linear, C=1) 紧随其后（88.67%），但训练快约 10 倍，是性价比最高的线性基线。</li>
+<li>SVM 中 C=0.1 时准确率仅 81.5%（正则过强、欠拟合），C=1 最好，C=10 略降到 88.1%（轻微过拟合），说明正则强度需按数量级搜索。</li>
+<li>分类报告显示各类别 F1 在 0.79~0.97：类别 4、5、9 最好（0.94+），类别 2 最弱（0.79），混淆矩阵中主要与类别 1、8 相互误分，与三者主题相近（讨论组内容重叠）一致。</li>
+</ul>
+
+<h2>五、实验思考</h2>
+<p><b>1. 为什么 SVM 和逻辑回归在该数据集上表现好？</b> TF-IDF 把文本映射到 5000 维稀疏向量空间，新闻类别的区分词明显、类别近似线性可分；线性 SVM/LR 直接在高维稀疏空间求最大间隔/线性决策面，无需非线性核映射，因此既快又稳，且天然避免了高维下的核函数计算开销。</p>
+<p><b>2. MLP 能否继续提升？</b> 加宽（hidden=(200,)）或加深（(100,50)）通常能再涨一点，但参数增多会增大方差，需配合更大的 <code>alpha</code> 正则化与早停来抑制过拟合；本实验受运行时间限制只试了单层结构，这是后续可探索方向。</p>
+
+<p class="small" style="margin-top:6px;">注：结果可复现——所有模型固定 random_state=42，预处理统计量仅从训练集学习；完整代码与说明见开头 GitHub 仓库。</p>
+
+</body>
+</html>

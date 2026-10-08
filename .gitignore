@@ -1,0 +1,12 @@
+# 大数据集不入库（从课程材料获取）
+train_data.csv
+test_data_unlabeled.csv
+
+# 系统/编辑器垃圾
+__MACOSX/
+.DS_Store
+__pycache__/
+*.pyc
+
+# 临时日志
+*.log
