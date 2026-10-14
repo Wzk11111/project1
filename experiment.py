@@ -68,13 +68,74 @@ def clean_text(text):
 
 
 # ---------------------------------------------------------------
-# 3. 主流程
+# 3. 稳定性重复实验（针对最优模型 + 次优模型）
+#    不同 random_state 重跑，验证"划分敏感性 + 训练随机性"，
+#    报告均值 ± 标准差，回应实验要求"存在随机性时重复运行"
+# ---------------------------------------------------------------
+STABILITY_SEEDS = [42, 2024, 7]   # 42 与主流程一致，另加两个种子
+
+
+def run_stability(X_clean, y):
+    """对指定模型用多个随机种子重跑，返回 (模型名, 均值, 标准差, 每次准确率)。"""
+    print("=" * 60)
+    print(f"步骤 8/8  稳定性重复实验（{len(STABILITY_SEEDS)} 个随机种子 × 2 个模型）")
+    models = {
+        "MLP(hidden=100)": lambda rs: MLPClassifier(
+            hidden_layer_sizes=(100,), alpha=0.001, max_iter=300, random_state=rs),
+        "SVM(linear C=1)": lambda rs: SVC(
+            kernel="linear", C=1.0, random_state=rs),
+    }
+    rows = []          # (模型, 种子, 准确率)
+    for mname, maker in models.items():
+        accs = []
+        for rs in STABILITY_SEEDS:
+            # 每个种子重新做 8:2 分层划分（检验划分敏感性）
+            X_tr, X_va, y_tr, y_va = train_test_split(
+                X_clean, y, test_size=0.2, stratify=y, random_state=rs)
+            vec = TfidfVectorizer(
+                max_features=5000, stop_words="english",
+                sublinear_tf=True, ngram_range=(1, 1))
+            X_tr = vec.fit_transform(X_tr)
+            X_va = vec.transform(X_va)
+            model = maker(rs)
+            model.fit(X_tr, y_tr)
+            acc = accuracy_score(y_va, model.predict(X_va))
+            accs.append(acc)
+            rows.append((mname, rs, acc))
+            print(f"  [{mname:<14} | seed={rs:<5}] 验证集准确率 = {acc:.4f}")
+        mean, std = float(np.mean(accs)), float(np.std(accs))
+        print(f"  -> {mname}: 均值 {mean:.4f} ± {std:.4f}（{len(accs)} 次）")
+
+    sdf = pd.DataFrame(rows, columns=["模型", "随机种子", "验证集准确率"])
+    sdf.to_csv(os.path.join(BASE_DIR, "stability_results.csv"),
+               index=False, encoding="utf-8-sig")
+
+    # 误差棒柱状图：均值 ± 标准差
+    agg = sdf.groupby("模型")["验证集准确率"].agg(["mean", "std"]).reset_index()
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(agg["模型"], agg["mean"], yerr=agg["std"], capsize=6,
+           color=["#59a14f", "#f28e2b"], edgecolor="black", linewidth=0.6)
+    for i, row in agg.iterrows():
+        ax.text(i, row["mean"] + row["std"] + 0.004,
+                f"{row['mean']:.4f}±{row['std']:.4f}",
+                ha="center", va="bottom", fontsize=10)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("Validation Accuracy")
+    ax.set_title("Stability Across Random Seeds (mean ± std)")
+    fig.tight_layout()
+    fig.savefig(os.path.join(BASE_DIR, "stability_comparison.png"), dpi=150)
+    plt.close(fig)
+    print("  已保存 stability_results.csv / stability_comparison.png")
+
+
+# ---------------------------------------------------------------
+# 4. 主流程
 # ---------------------------------------------------------------
 def main():
     t0 = time.time()
     print("=" * 60)
     print("步骤 1/7  加载数据")
-    X_train_raw, y_train, X_test_raw = load_data()
+    X_train_raw, y_train_full, X_test_raw = load_data()
     print(f"  原始训练样本: {len(X_train_raw)}   测试样本: {len(X_test_raw)}")
 
     print("=" * 60)
@@ -90,8 +151,8 @@ def main():
     print("=" * 60)
     print("步骤 3/7  划分训练集 / 验证集（8:2 分层，测试集封存）")
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train_clean, y_train,
-        test_size=0.2, stratify=y_train, random_state=RANDOM_STATE,
+        X_train_clean, y_train_full,
+        test_size=0.2, stratify=y_train_full, random_state=RANDOM_STATE,
     )
     print(f"  最终训练集: {len(X_train)}   验证集: {len(X_val)}   测试集(封存): {len(X_test_clean)}")
 
@@ -197,6 +258,10 @@ def main():
     plt.close(fig)
 
     print("  已保存 validation_comparison.png / confusion_matrix.png")
+
+    # 稳定性重复实验（用完整清洗后的数据，内部自行划分）
+    run_stability(X_train_clean, y_train_full)
+
     print("=" * 60)
     print(f"全部完成，总耗时 {time.time() - t0:.1f}s。"
           f"提交文件：predictions.csv（验证集最优模型 {name_best} {desc_best}）")
