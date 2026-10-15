@@ -43,7 +43,7 @@ def clean_text(text):
     return t
 
 
-# 换个随机种子再跑几遍，看看结果靠不靠谱
+# 换个随机种子再跑几遍，看看结果对不对
 STABILITY_SEEDS = [42, 2024, 7]
 
 
