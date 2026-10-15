@@ -1,26 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-当代人工智能 实验一：文本分类（完整版）
-=========================================
-相对 draft_main.py 新增：
-  1. 数据清洗：去邮件头、URL、邮箱、标点、数字（保留字母）
-  2. 验证集划分：8:2 分层切分（测试集全程封存）
-  3. 4 个模型 + 多组参数，在验证集上对比调参
-  4. 固定 random_state=42 保证可复现
-  5. 输出：验证集对比表、最优模型、混淆矩阵、对比柱状图、
-     最终提交文件 predictions.csv
-
-运行方式（在 project1 环境）：
-    python experiment.py
-"""
-
 import os
 import re
 import time
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use("Agg")          # 无界面环境也可出图
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
@@ -36,9 +21,6 @@ np.random.seed(RANDOM_STATE)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-# ---------------------------------------------------------------
-# 1. 数据加载
-# ---------------------------------------------------------------
 def load_data():
     train_df = pd.read_csv(os.path.join(BASE_DIR, "train_data.csv"))
     test_df = pd.read_csv(os.path.join(BASE_DIR, "test_data_unlabeled.csv"))
@@ -48,35 +30,24 @@ def load_data():
     return X_train, y_train, X_test
 
 
-# ---------------------------------------------------------------
-# 2. 数据清洗
-# ---------------------------------------------------------------
 def clean_text(text):
-    """把一封原始新闻组邮件清洗成纯单词小写文本。"""
-    # (a) 邮件头部（From/Subject/Organization 等）在第一个空行之前，直接裁掉
+    # 邮件头在第一个空行之前，直接裁掉
     parts = text.split("\n\n", 1)
     body = parts[1] if len(parts) > 1 else parts[0]
     t = body.lower()
-    # (b) 去掉 URL 和邮箱地址
+    # 去掉 URL、邮箱，只留字母
     t = re.sub(r"https?://\S+|www\.\S+", " ", t)
     t = re.sub(r"\S+@\S+\.\S+", " ", t)
-    # (c) 只保留字母（去掉标点、数字、引用符号等）
     t = re.sub(r"[^a-z\s]", " ", t)
-    # (d) 压缩空白
     t = re.sub(r"\s+", " ", t).strip()
     return t
 
 
-# ---------------------------------------------------------------
-# 3. 稳定性重复实验（针对最优模型 + 次优模型）
-#    不同 random_state 重跑，验证"划分敏感性 + 训练随机性"，
-#    报告均值 ± 标准差，回应实验要求"存在随机性时重复运行"
-# ---------------------------------------------------------------
-STABILITY_SEEDS = [42, 2024, 7]   # 42 与主流程一致，另加两个种子
+# 换不同随机种子重跑，看结果稳不稳
+STABILITY_SEEDS = [42, 2024, 7]
 
 
 def run_stability(X_clean, y):
-    """对指定模型用多个随机种子重跑，返回 (模型名, 均值, 标准差, 每次准确率)。"""
     print("=" * 60)
     print(f"步骤 8/8  稳定性重复实验（{len(STABILITY_SEEDS)} 个随机种子 × 2 个模型）")
     models = {
@@ -85,11 +56,11 @@ def run_stability(X_clean, y):
         "SVM(linear C=1)": lambda rs: SVC(
             kernel="linear", C=1.0, random_state=rs),
     }
-    rows = []          # (模型, 种子, 准确率)
+    rows = []
     for mname, maker in models.items():
         accs = []
         for rs in STABILITY_SEEDS:
-            # 每个种子重新做 8:2 分层划分（检验划分敏感性）
+            # 每个种子重新做 8:2 划分
             X_tr, X_va, y_tr, y_va = train_test_split(
                 X_clean, y, test_size=0.2, stratify=y, random_state=rs)
             vec = TfidfVectorizer(
@@ -110,7 +81,7 @@ def run_stability(X_clean, y):
     sdf.to_csv(os.path.join(BASE_DIR, "stability_results.csv"),
                index=False, encoding="utf-8-sig")
 
-    # 误差棒柱状图：均值 ± 标准差
+    # 误差棒图
     agg = sdf.groupby("模型")["验证集准确率"].agg(["mean", "std"]).reset_index()
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.bar(agg["模型"], agg["mean"], yerr=agg["std"], capsize=6,
@@ -128,9 +99,6 @@ def run_stability(X_clean, y):
     print("  已保存 stability_results.csv / stability_comparison.png")
 
 
-# ---------------------------------------------------------------
-# 4. 主流程
-# ---------------------------------------------------------------
 def main():
     t0 = time.time()
     print("=" * 60)
@@ -142,7 +110,6 @@ def main():
     print("步骤 2/7  数据清洗（去邮件头/URL/标点/数字，转小写）")
     X_train_clean = [clean_text(x) for x in X_train_raw]
     X_test_clean = [clean_text(x) for x in X_test_raw]
-    # 空文本兜底
     X_train_clean = [x if x else "[empty]" for x in X_train_clean]
     X_test_clean = [x if x else "[empty]" for x in X_test_clean]
     print("  清洗示例（第一个训练样本清洗后前 120 字符）:")
@@ -159,10 +126,10 @@ def main():
     print("=" * 60)
     print("步骤 4/7  TF-IDF 特征化（只在训练集 fit，同一规则套验证/测试）")
     vectorizer = TfidfVectorizer(
-        max_features=5000,      # 词表上限
-        stop_words="english",   # 停用词
-        sublinear_tf=True,      # 1+log(tf)，压低高频词
-        ngram_range=(1, 1),     # 单词粒度（可尝试 (1,2)）
+        max_features=5000,
+        stop_words="english",
+        sublinear_tf=True,
+        ngram_range=(1, 1),
     )
     X_train_tfidf = vectorizer.fit_transform(X_train)
     X_val_tfidf = vectorizer.transform(X_val)
@@ -171,7 +138,6 @@ def main():
 
     print("=" * 60)
     print("步骤 5/7  训练多个模型，在验证集上对比调参")
-    # 每个元素: (模型名, 参数描述, 模型对象)
     candidates = [
         ("NB",  "alpha=0.1",        MultinomialNB(alpha=0.1)),
         ("NB",  "alpha=1.0",        MultinomialNB(alpha=1.0)),
@@ -184,8 +150,8 @@ def main():
         ("MLP", "hidden=(100,)",    MLPClassifier(hidden_layer_sizes=(100,), alpha=0.001, max_iter=300, random_state=RANDOM_STATE)),
     ]
 
-    results = []          # (模型名, 参数, 验证集准确率, 训练耗时)
-    best = None           # (准确率, 模型名, 参数, 模型对象)
+    results = []
+    best = None
     for name, desc, model in candidates:
         ts = time.time()
         model.fit(X_train_tfidf, y_train)
@@ -217,9 +183,6 @@ def main():
     print(f"  已保存 {out_path}，共 {n_pred} 行（应为 2457）")
     print(f"  预测标签分布: {pd.Series(y_test_pred).value_counts().sort_index().to_dict()}")
 
-    # ---------------------------------------------------------------
-    # 出图（供实验报告使用）
-    # ---------------------------------------------------------------
     print("=" * 60)
     print("生成可视化图表（验证集对比柱状图 + 混淆矩阵）")
 
@@ -259,7 +222,6 @@ def main():
 
     print("  已保存 validation_comparison.png / confusion_matrix.png")
 
-    # 稳定性重复实验（用完整清洗后的数据，内部自行划分）
     run_stability(X_train_clean, y_train_full)
 
     print("=" * 60)
