@@ -31,11 +31,11 @@ def load_data():
 
 
 def clean_text(text):
-    # 邮件头在第一个空行之前，直接裁掉
+    # 邮件头（From、Subject那些）在第一个空行前，直接不要了
     parts = text.split("\n\n", 1)
     body = parts[1] if len(parts) > 1 else parts[0]
     t = body.lower()
-    # 去掉 URL、邮箱，只留字母
+    # 去掉 URL、邮箱、标点数字，只留英文单词
     t = re.sub(r"https?://\S+|www\.\S+", " ", t)
     t = re.sub(r"\S+@\S+\.\S+", " ", t)
     t = re.sub(r"[^a-z\s]", " ", t)
@@ -43,7 +43,7 @@ def clean_text(text):
     return t
 
 
-# 换不同随机种子重跑，看结果稳不稳
+# 换个随机种子再跑几遍，看看结果靠不靠谱
 STABILITY_SEEDS = [42, 2024, 7]
 
 
@@ -60,7 +60,7 @@ def run_stability(X_clean, y):
     for mname, maker in models.items():
         accs = []
         for rs in STABILITY_SEEDS:
-            # 每个种子重新做 8:2 划分
+            # 每个种子都重新切一次
             X_tr, X_va, y_tr, y_va = train_test_split(
                 X_clean, y, test_size=0.2, stratify=y, random_state=rs)
             vec = TfidfVectorizer(
@@ -81,7 +81,7 @@ def run_stability(X_clean, y):
     sdf.to_csv(os.path.join(BASE_DIR, "stability_results.csv"),
                index=False, encoding="utf-8-sig")
 
-    # 误差棒图
+    # 画个带误差棒的图
     agg = sdf.groupby("模型")["验证集准确率"].agg(["mean", "std"]).reset_index()
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.bar(agg["模型"], agg["mean"], yerr=agg["std"], capsize=6,
@@ -186,7 +186,7 @@ def main():
     print("=" * 60)
     print("生成可视化图表（验证集对比柱状图 + 混淆矩阵）")
 
-    # 图1：各模型最佳验证准确率
+    # 图1 各模型的最好成绩
     best_per_model = df.groupby("模型")["验证集准确率"].max().sort_values(ascending=False)
     fig, ax = plt.subplots(figsize=(6, 4))
     bars = ax.bar(best_per_model.index, best_per_model.values,
@@ -201,7 +201,7 @@ def main():
     fig.savefig(os.path.join(BASE_DIR, "validation_comparison.png"), dpi=150)
     plt.close(fig)
 
-    # 图2：最优模型在验证集上的混淆矩阵
+    # 图2 混淆矩阵
     cm = confusion_matrix(y_val, model_best.predict(X_val_tfidf))
     fig, ax = plt.subplots(figsize=(7, 6))
     im = ax.imshow(cm, cmap="Blues")

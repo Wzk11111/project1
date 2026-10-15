@@ -67,7 +67,7 @@ def main():
         losses.append(loss)
         accs.append(acc)
         print(f"epoch {e:2d}  loss={loss:.4f}  val_acc={acc:.4f}")
-        # 连续 3 轮 loss 几乎不变 -> 认为收敛，提前停
+        # 连续几轮 loss 都不动了，说明收敛了，停
         if prev_loss is not None and abs(prev_loss - loss) < 5e-4:
             if len(epochs) >= 3 and all(
                 abs(losses[-i] - losses[-i-1]) < 5e-4 for i in (1, 2)
@@ -75,7 +75,7 @@ def main():
                 break
         prev_loss = loss
 
-    # 双轴曲线：左边 loss，右边验证集准确率
+    # 双轴，左边 loss 右边准确率
     fig, ax1 = plt.subplots(figsize=(6.5, 4))
     ax1.plot(epochs, losses, color="#4e79a7", marker="o", markersize=3,
              linewidth=1.5, label="training loss")
