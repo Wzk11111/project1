@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="345" viewBox="0 0 780 345" font-family="'Microsoft YaHei','SimHei',sans-serif">
+<rect width="780" height="345" fill="#ffffff"/>
+<text x="390.0" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#1f2430">题目三 访问顺序对Alpha-Beta剪枝的影响</text>
+<rect x="320.0" y="42" width="12" height="12" fill="#1f3a5f"/>
+<text x="337.0" y="52" font-size="11.5" fill="#1f2430">从左到右</text>
+<rect x="390.0" y="42" width="12" height="12" fill="#c8553d"/>
+<text x="407.0" y="52" font-size="11.5" fill="#1f2430">最佳排序</text>
+<line x1="66" y1="273.0" x2="760" y2="273.0" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="277.0" text-anchor="end" font-size="11" fill="#8b94a3">0</text>
+<line x1="66" y1="232.4" x2="760" y2="232.4" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="236.4" text-anchor="end" font-size="11" fill="#8b94a3">16</text>
+<line x1="66" y1="191.8" x2="760" y2="191.8" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="195.8" text-anchor="end" font-size="11" fill="#8b94a3">32</text>
+<line x1="66" y1="151.2" x2="760" y2="151.2" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="155.2" text-anchor="end" font-size="11" fill="#8b94a3">48</text>
+<line x1="66" y1="110.6" x2="760" y2="110.6" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="114.6" text-anchor="end" font-size="11" fill="#8b94a3">64</text>
+<line x1="66" y1="70.0" x2="760" y2="70.0" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="74.0" text-anchor="end" font-size="11" fill="#8b94a3">80</text>
+<text x="18" y="171.5" transform="rotate(-90 18 171.5)" text-anchor="middle" font-size="11.5" fill="#8b94a3">访问节点数</text>
+<line x1="66" y1="70" x2="66" y2="273" stroke="#1f3a5f" stroke-width="1.5"/>
+<line x1="66" y1="273" x2="760" y2="273" stroke="#1f3a5f" stroke-width="1.5"/>
+<rect x="209.5" y="151.2" width="27.0" height="121.8" fill="#1f3a5f"/>
+<text x="223.0" y="146.2" text-anchor="middle" font-size="10.5" fill="#1f2430">48</text>
+<rect x="239.5" y="194.3" width="27.0" height="78.7" fill="#c8553d"/>
+<text x="253.0" y="189.3" text-anchor="middle" font-size="10.5" fill="#1f2430">31</text>
+<text x="239.5" y="293" text-anchor="middle" font-size="10.5" fill="#1f2430">随机树 深度3分支4</text>
+<rect x="556.5" y="105.5" width="27.0" height="167.5" fill="#1f3a5f"/>
+<text x="570.0" y="100.5" text-anchor="middle" font-size="10.5" fill="#1f2430">66</text>
+<rect x="586.5" y="179.1" width="27.0" height="93.9" fill="#c8553d"/>
+<text x="600.0" y="174.1" text-anchor="middle" font-size="10.5" fill="#1f2430">37</text>
+<text x="586.5" y="293" text-anchor="middle" font-size="10.5" fill="#1f2430">随机树 深度4分支3</text>
+</svg>

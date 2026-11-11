@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="345" viewBox="0 0 780 345" font-family="'Microsoft YaHei','SimHei',sans-serif">
+<rect width="780" height="345" fill="#ffffff"/>
+<text x="390.0" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#1f2430">题目三 Minimax与Alpha-Beta访问节点数</text>
+<rect x="261.5" y="42" width="12" height="12" fill="#1f3a5f"/>
+<text x="278.5" y="52" font-size="11.5" fill="#1f2430">Minimax</text>
+<rect x="370.5" y="42" width="12" height="12" fill="#c8553d"/>
+<text x="387.5" y="52" font-size="11.5" fill="#1f2430">Alpha-Beta</text>
+<line x1="66" y1="273.0" x2="760" y2="273.0" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="277.0" text-anchor="end" font-size="11" fill="#8b94a3">0</text>
+<line x1="66" y1="232.4" x2="760" y2="232.4" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="236.4" text-anchor="end" font-size="11" fill="#8b94a3">30</text>
+<line x1="66" y1="191.8" x2="760" y2="191.8" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="195.8" text-anchor="end" font-size="11" fill="#8b94a3">60</text>
+<line x1="66" y1="151.2" x2="760" y2="151.2" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="155.2" text-anchor="end" font-size="11" fill="#8b94a3">90</text>
+<line x1="66" y1="110.6" x2="760" y2="110.6" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="114.6" text-anchor="end" font-size="11" fill="#8b94a3">120</text>
+<line x1="66" y1="70.0" x2="760" y2="70.0" stroke="#dfe5ee" stroke-width="1"/>
+<text x="58" y="74.0" text-anchor="end" font-size="11" fill="#8b94a3">150</text>
+<text x="18" y="171.5" transform="rotate(-90 18 171.5)" text-anchor="middle" font-size="11.5" fill="#8b94a3">访问节点数</text>
+<line x1="66" y1="70" x2="66" y2="273" stroke="#1f3a5f" stroke-width="1.5"/>
+<line x1="66" y1="273" x2="760" y2="273" stroke="#1f3a5f" stroke-width="1.5"/>
+<rect x="151.7" y="252.7" width="27.0" height="20.3" fill="#1f3a5f"/>
+<text x="165.2" y="247.7" text-anchor="middle" font-size="10.5" fill="#1f2430">15</text>
+<rect x="181.7" y="254.1" width="27.0" height="18.9" fill="#c8553d"/>
+<text x="195.2" y="249.1" text-anchor="middle" font-size="10.5" fill="#1f2430">14</text>
+<text x="181.7" y="293" text-anchor="middle" font-size="10.5" fill="#1f2430">给定树</text>
+<rect x="383.0" y="158.0" width="27.0" height="115.0" fill="#1f3a5f"/>
+<text x="396.5" y="153.0" text-anchor="middle" font-size="10.5" fill="#1f2430">85</text>
+<rect x="413.0" y="208.0" width="27.0" height="65.0" fill="#c8553d"/>
+<text x="426.5" y="203.0" text-anchor="middle" font-size="10.5" fill="#1f2430">48</text>
+<text x="413.0" y="293" text-anchor="middle" font-size="10.5" fill="#1f2430">随机树 深度3分支4</text>
+<rect x="614.3" y="109.2" width="27.0" height="163.8" fill="#1f3a5f"/>
+<text x="627.8" y="104.2" text-anchor="middle" font-size="10.5" fill="#1f2430">121</text>
+<rect x="644.3" y="183.7" width="27.0" height="89.3" fill="#c8553d"/>
+<text x="657.8" y="178.7" text-anchor="middle" font-size="10.5" fill="#1f2430">66</text>
+<text x="644.3" y="293" text-anchor="middle" font-size="10.5" fill="#1f2430">随机树 深度4分支3</text>
+</svg>
